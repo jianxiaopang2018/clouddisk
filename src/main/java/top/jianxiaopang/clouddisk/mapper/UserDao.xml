@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<!--设置为UserDao接口方法提供sql语句配置-->
+<mapper namespace="top.jianxiaopang.clouddisk.dao.UserDao">
+
+    <!--插入用户信息-->
+    <insert id="insert">
+        insert into user (email,username,password,status,verification_code,imagepath,visitpath)
+        values (#{email},#{username},#{password},#{status},#{verificationCode},#{imagePath},#{visitPath})
+    </insert>
+
+    <!--查询邮箱是否被注册-->
+    <select id="selectByEmail" parameterType="String" resultType="int">
+        SELECT count(*) FROM user WHERE email = #{email}
+    </select>
+
+    <!--通过邮箱验证码查询邮箱以完成注册-->
+    <select id="selectByCode" parameterType="String" resultType="String">
+        select email from user where verification_code = #{verificationCode} and status = 0
+    </select>
+
+    <!--登录，验证邮箱和密码并返回用户信息-->
+    <select id="login" parameterType="String" resultMap="userList">
+        SELECT * FROM user WHERE email = #{email} and password = #{password} and status = 1
+    </select>
+
+    <!--返回用户信息-->
+    <select id="loginWithoutPassword" parameterType="String" resultMap="userList">
+        SELECT * FROM user WHERE email = #{email}
+    </select>
+
+    <!--更新邮箱注册激活状态-->
+    <update id="setStatus" parameterType="String">
+        update user set
+        status = 1
+        where email = #{email}
+    </update>
+
+    <!--用户信息更新-->
+    <update id="updateUser">
+        update user set
+        imagepath = #{imagePath},username = #{username}
+        where email = #{email}
+    </update>
+
+    <resultMap type="User" id="userList" >
+        <result property="id" column="id" jdbcType="INTEGER"/>
+        <result property="email" column="email" jdbcType="VARCHAR"/>
+        <result property="username" column="username" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="INTEGER"/>
+        <result property="verificationCode" column="verification_code" jdbcType="VARCHAR"/>
+        <result property="imagePath" column="imagepath" jdbcType="VARCHAR"/>
+        <result property="visitPath" column="visitpath" jdbcType="VARCHAR"/>
+    </resultMap>
+</mapper>

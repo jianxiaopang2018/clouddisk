@@ -1,0 +1,220 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.jianxiaopang.clouddisk.dao.HomeDao">
+    <!--插入文件信息-->
+    <insert id="insertFile">
+        insert into file (uuidname, filename, savepath, logicalpath, userid, parentnodeid, isfolder, size, downnum, visitpath)
+        values
+            (#{uuidName}, #{fileName}, #{savePath}, #{logicalPath}, #{userId}, #{parentNodeId}, #{isFolder}, #{size}, 0, #{visitPath})
+    </insert>
+
+    <!--插入文件夹信息-->
+    <insert id="createFolder">
+        insert into file (filename, logicalpath, userid, parentnodeid, isfolder, downnum)
+        values (#{fileName}, #{logicalPath}, #{userId}, #{parentNodeId}, #{isFolder}, 0)
+    </insert>
+
+    <!--查看文件夹是否重名-->
+    <select id="selectFolderByFileName" resultType="int">
+        select count(*)
+        from file
+        where filename = #{fileName} and userid = #{userId} and parentnodeid = #{parentNodeId}
+    </select>
+
+    <!--以此节点为父节点查询子文件信息-->
+    <select id="selectFileNode" resultMap="FileNodeList">
+        select *
+        from file
+        where parentnodeid = #{id}
+    </select>
+
+    <!--以此节点为子节点查询兄弟文件信息-->
+    <select id="selectFileNodeByParentNodeId" resultMap="FileNodeList">
+        select *
+        from file
+        where userid = #{userId} and parentnodeid = #{parentNodeId}
+    </select>
+
+    <!--查询逻辑保存地址-->
+    <select id="selectLogicalPathById" resultType="String">
+        select logicalpath as 'logicalPath'
+        from file
+        where id = #{id}
+    </select>
+
+    <!--用id查询单个文件信息-->
+    <select id="getFileNode" resultMap="FileNodeList" parameterType="int">
+        select *
+        from file
+        where id = #{id}
+    </select>
+
+    <!--查询图片文件信息-->
+    <select id="selectNodeOrderByImage" resultMap="FileNodeList">
+        select *
+        from file
+        where userid = #{userId}
+              and (filename like '%BMP'
+                   or filename like '%bmp'
+                   or filename like '%JPEG'
+                   or filename like '%jpeg'
+                   or filename like '%JPG'
+                   or filename like '%jpg'
+                   or filename like '%GIF'
+                   or filename like '%gif'
+                   or filename like '%PSD'
+                   or filename like '%psd'
+                   or filename like '%PNG'
+                   or filename like '%png'
+                   or filename like '%TIFF'
+                   or filename like '%tiff'
+                   or filename like '%EPS'
+                   or filename like '%eps'
+                   or filename like '%TGA'
+                   or filename like '%tga'
+              )
+    </select>
+
+    <!--查询文档文件信息-->
+    <select id="selectNodeOrderByDocument" resultMap="FileNodeList">
+        select *
+        from file
+        where userid = #{userId}
+              and (filename like '%TXT'
+                   or filename like '%txt'
+                   or filename like '%DOC'
+                   or filename like '%doc'
+                   or filename like '%DOCX'
+                   or filename like '%docx'
+                   or filename like '%XLSX'
+                   or filename like '%xlsx'
+                   or filename like '%PPT'
+                   or filename like '%ppt'
+                   or filename like '%PPTX'
+                   or filename like '%pptx'
+                   or filename like '%HLP'
+                   or filename like '%hlp'
+                   or filename like '%WPS'
+                   or filename like '%wps'
+                   or filename like '%RTF'
+                   or filename like '%rtf'
+                   or filename like '%HTML'
+                   or filename like '%html'
+                   or filename like '%PDF'
+                   or filename like '%pdf'
+                   or filename like '%ZIP'
+                   or filename like '%zip'
+                   or filename like '%RAR'
+                   or filename like '%rar'
+                   or filename like '%GZ'
+                   or filename like '%gz'
+                   or filename like '%tgz'
+                   or filename like '%TGZ'
+              )
+    </select>
+
+    <!--查询视频文件信息-->
+    <select id="selectNodeOrderByVideo" resultMap="FileNodeList">
+        select *
+        from file
+        where userid = #{userId}
+              and (filename like '%MP4'
+                   or filename like '%mp4'
+                   or filename like '%3GP'
+                   or filename like '%3gp'
+                   or filename like '%AVI'
+                   or filename like '%avi'
+                   or filename like '%MKV'
+                   or filename like '%mkv'
+                   or filename like '%MPG'
+                   or filename like '%mpg'
+                   or filename like '%VOB'
+                   or filename like '%vob'
+                   or filename like '%FLV'
+                   or filename like '%flv'
+                   or filename like '%SWF'
+                   or filename like '%swf'
+                   or filename like '%MOV'
+                   or filename like '%mov'
+                   or filename like '%RMVB'
+                   or filename like '%rmvb'
+              )
+    </select>
+
+    <!--查询音乐文件信息-->
+    <select id="selectNodeOrderByMusic" resultMap="FileNodeList">
+        select *
+        from file
+        where userid = #{userId}
+              and (filename like '%MP3'
+                   or filename like '%mp3'
+                   or filename like '%WMA'
+                   or filename like '%wma'
+                   or filename like '%FLAC'
+                   or filename like '%flac'
+                   or filename like '%M4A'
+                   or filename like '%m4a'
+                   or filename like '%M4R'
+                   or filename like '%m4r'
+                   or filename like '%OGG'
+                   or filename like '%ogg'
+                   or filename like '%MP2'
+                   or filename like '%mp2'
+                   or filename like '%WAV'
+                   or filename like '%wav'
+                   or filename like '%WV'
+                   or filename like '%wv'
+              )
+    </select>
+
+    <!--用关键字查询文件信息按某种顺序排序-->
+    <select id="search" resultMap="FileNodeList">
+        select *
+        from file
+        where filename like '%' #{keyWord1} '%'
+        order by #{keyWord2} #{order}
+    </select>
+
+    <!--返回文件的下载地址-->
+    <select id="preview" resultType="String">
+        select visitpath
+        from file
+        where id = #{id}
+    </select>
+
+    <!--更新逻辑地址和父节点和文件名-->
+    <update id="updateFile">
+        update file
+        set logicalpath = #{logicalPath}, parentnodeid = #{parentNodeId}, filename = ${fileName}
+        WHERE id = #{id}
+    </update>
+
+    <!--更新下载次数-->
+    <update id="updateDownNum">
+        UPDATE file
+        SET downnum = downnum + 1
+        where id = #{id}
+    </update>
+
+    <!--删除文件-->
+    <delete id="deleteFile">
+        delete from file
+        where id = #{id}
+    </delete>
+
+    <resultMap id="FileNodeList" type="top.jianxiaopang.clouddisk.pojo.FileNode">  <!--对象所在包名自取-->
+        <id column="id" property="id" jdbcType="INTEGER"/>
+        <result column="uuidname" property="uuidName" jdbcType="VARCHAR"/>
+        <result column="filename" property="fileName" jdbcType="VARCHAR"/>
+        <result column="savepath" property="savePath" jdbcType="VARCHAR"/>
+        <result column="logicalpath" property="logicalPath" jdbcType="VARCHAR"/>
+        <result column="userid" property="userId" jdbcType="INTEGER"/>
+        <result column="isfolder" property="isFolder" jdbcType="INTEGER"/>
+        <result column="parentnodeid" property="parentNodeId" jdbcType="INTEGER"/>
+        <result column="downnum" property="downNum" jdbcType="INTEGER"/>
+        <result column="updatetime" property="updateTime" jdbcType="TIMESTAMP"/>
+        <result column="size" property="size"/>
+        <result column="visitpath" property="visitPath"/>
+    </resultMap>
+
+</mapper>
